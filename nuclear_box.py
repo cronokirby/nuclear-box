@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 import pint
 from typing import Any
-import os
 
 units = pint.UnitRegistry()
 units.setup_matplotlib()
@@ -127,7 +127,7 @@ def plot_ben():
     plt.ylabel("Binding Energy Per Nucleon (MeV)")
     plt.xlabel("Atomic Number")
 
-    os.makedirs('./images', exist_ok=True)
+    os.makedirs("./images", exist_ok=True)
     plt.savefig("images/binding_energy_per_nucleon.png")
 
 
