@@ -14,7 +14,7 @@ BINDING_FACTOR_CHARGE = 0.714 * units.megaelectron_volt
 BINDING_FACTOR_SYMMETRY = 23.20 * units.megaelectron_volt
 BINDING_FACTOR_PARITY = 11.20 * units.megaelectron_volt
 
-ATOMIC_MASS_ENERGY_EQUIVALENCE = 931.5 * units.megaelectron_volt / units.dalton
+ATOMIC_MASS_ENERGY_EQUIVALENCE = 931.49410242 * units.megaelectron_volt / units.dalton
 PROTON_MASS = 1.0072765 * units.dalton
 NEUTRON_MASS = 1.0086649 * units.dalton
 ELECTRON_MASS = 0.00054858 * units.dalton
