@@ -43,7 +43,7 @@ class Nuclide:
         """
         return self.atomic_number - self.protons
 
-    def binding_energy(self):
+    def approximate_binding_energy(self):
         """
         Returns the binding energy (in MeV) of this nuclide.
 
@@ -53,7 +53,6 @@ class Nuclide:
         for by counting the nucleons.
         """
         if self.protons == 1 and self.atomic_number <= 3:
-            print(self.protons, self.atomic_number)
             atomic_mass = self.neutrons() * NEUTRON_MASS + PROTON_MASS + ELECTRON_MASS
             return (
                 atomic_mass - HYDROGEN_ISOTOPE_MASSES[self.atomic_number - 1]
@@ -71,28 +70,8 @@ class Nuclide:
             - BINDING_FACTOR_PARITY * parity / A_f ** (1 / 2)
         )
 
-    def binding_energy_per_nucleon(self):
-        return self.binding_energy() / self.atomic_number
-
-    def binding_energy_mass(self):
-        """
-        The mass equivalent of the binding energy of this nuclide.
-        """
-        return self.binding_energy() / ATOMIC_MASS_ENERGY_EQUIVALENCE
-
-    def atomic_mass(self):
-        """
-        A good estimate of the atomic mass of this nuclide, in daltons.
-        """
-        return (
-            self.protons * (PROTON_MASS + ELECTRON_MASS)
-            + self.neutrons() * NEUTRON_MASS
-            # Because it takes energy to move from a grouped nucleus to separated
-            # nucleons, moving them together must therefore release energy. Since
-            # the total mass and energy of the system must be conserved, this released
-            # energy results in a loss of mass inside the nucleus.
-            - self.binding_energy_mass()
-        )
+    def approximate_binding_energy_per_nucleon(self):
+        return self.approximate_binding_energy() / self.atomic_number
 
 
 def minimal_binding_energy_protons(atomic_number):
@@ -117,11 +96,10 @@ def plot_ben():
     atomic_numbers = np.linspace(1, 256, 256, dtype="int")
     likely_atomic_ben = (
         lambda a: Nuclide(minimal_binding_energy_protons(a), a)
-        .binding_energy_per_nucleon()
+        .approximate_binding_energy_per_nucleon()
         .magnitude
     )
     bens = np.vectorize(likely_atomic_ben)(atomic_numbers)
-    print(bens)
     fig, ax = plt.subplots()
     ax.plot(atomic_numbers, bens)
     plt.ylabel("Binding Energy Per Nucleon (MeV)")
