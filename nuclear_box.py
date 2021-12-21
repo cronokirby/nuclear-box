@@ -1,4 +1,6 @@
+import csv
 from dataclasses import dataclass
+from enum import Enum
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -24,6 +26,71 @@ HYDROGEN_ISOTOPE_MASSES = [
     2.01410177812 * units.dalton,
     3.01604927790 * units.dalton,
 ]
+
+
+@dataclass
+class CalculatedType(Enum):
+    Calculated = 1
+    Estimated = 2
+    Absent = 3
+
+    @staticmethod
+    def from_str(s):
+        if s == "calculated":
+            return CalculatedType.Calculated
+        elif s == "estimated":
+            return CalculatedType.Estimated
+        else:
+            return CalculatedType.Absent
+
+
+def float_or_none(x):
+    try:
+        return float(x)
+    except ValueError:
+        return None
+
+
+@dataclass
+class AtomicTableEntry:
+    n: int
+    z: int
+    a: int
+    element: str
+    mass_excess: Any
+    mass_excess_margin: Any
+    mass_excess_calculated: CalculatedType
+    binding_energy_per_nucleon: Any
+    binding_energy_per_nucleon_margin: Any
+    binding_energy_per_nucleon_calculated: CalculatedType
+    beta_decay_energy: Any
+    beta_decay_energy_margin: Any
+    beta_decay_energy_calculated: CalculatedType
+    atomic_mass: Any
+    atomic_mass_margin: Any
+    atomic_mass_margin_calculated: CalculatedType
+
+    @staticmethod
+    def from_row(row):
+        energy_unit = 1e-3 * units.megaelectron_volt
+        return AtomicTableEntry(
+            int(row[0]),
+            int(row[1]),
+            int(row[2]),
+            row[3],
+            float_or_none(row[4]) * energy_unit,
+            float(row[5]) * energy_unit,
+        )
+
+
+@dataclass
+class AtomicTable:
+    @staticmethod
+    def from_csv_file(file):
+        with open(file, "r") as fp:
+            reader = csv.reader(fp)
+            for row in reader:
+                entry = AtomicTableEntry.from_row()
 
 
 @dataclass
