@@ -44,13 +44,6 @@ class CalculatedType(Enum):
             return CalculatedType.Absent
 
 
-def float_or_none(x):
-    try:
-        return float(x)
-    except ValueError:
-        return None
-
-
 @dataclass
 class AtomicTableEntry:
     n: int
@@ -73,24 +66,78 @@ class AtomicTableEntry:
     @staticmethod
     def from_row(row):
         energy_unit = 1e-3 * units.megaelectron_volt
+
+        n = int(row[0])
+        z = int(row[1])
+        a = int(row[2])
+
+        element = row[3]
+
+        mass_excess = None
+        mass_excess_margin = None
+        mass_excess_calculated = CalculatedType.Absent
+        if row[4] != "":
+            mass_excess = float(row[4]) * energy_unit
+            mass_excess_margin = float(row[5]) * energy_unit
+            mass_excess_calculated = CalculatedType.from_str(row[6])
+
+        binding_energy_per_nucleon = None
+        binding_energy_per_nucleon_margin = None
+        binding_energy_per_nucleon_calculated = CalculatedType.Absent
+        if row[7] != "":
+            binding_energy_per_nucleon = float(row[7]) * energy_unit
+            binding_energy_per_nucleon_margin = float(row[8]) * energy_unit
+            binding_energy_per_nucleon_calculated = CalculatedType.from_str(row[9])
+
+        beta_decay_energy = None
+        beta_decay_energy_margin = None
+        beta_decay_energy_calculated = CalculatedType.Absent
+        if row[10] != "":
+            beta_decay_energy = float(row[10]) * energy_unit
+            beta_decay_energy_margin = float(row[11]) * energy_unit
+            beta_decay_energy_calculated = CalculatedType.from_str(row[12])
+
+        atomic_mass = None
+        atomic_mass_margin = None
+        atomic_mass_calculated = CalculatedType.Absent
+        if row[13] != "":
+            atomic_mass = float(row[13]) * units.dalton
+            atomic_mass_margin = float(row[14]) * units.dalton
+            atomic_mass_calculated = CalculatedType.from_str(row[15])
+
         return AtomicTableEntry(
-            int(row[0]),
-            int(row[1]),
-            int(row[2]),
-            row[3],
-            float_or_none(row[4]) * energy_unit,
-            float(row[5]) * energy_unit,
+            n,
+            z,
+            a,
+            element,
+            mass_excess,
+            mass_excess_margin,
+            mass_excess_calculated,
+            binding_energy_per_nucleon,
+            binding_energy_per_nucleon_margin,
+            binding_energy_per_nucleon_calculated,
+            beta_decay_energy,
+            beta_decay_energy_margin,
+            beta_decay_energy_calculated,
+            atomic_mass,
+            atomic_mass_margin,
+            atomic_mass_calculated,
         )
 
 
-@dataclass
 class AtomicTable:
+    def __init__(self, entries):
+        self.entries = entries
+
     @staticmethod
     def from_csv_file(file):
+        entries = []
         with open(file, "r") as fp:
             reader = csv.reader(fp)
+            next(reader)
             for row in reader:
-                entry = AtomicTableEntry.from_row()
+                entries.append(AtomicTableEntry.from_row(row))
+        return AtomicTable(entries)
 
 
 @dataclass
