@@ -10,6 +10,8 @@ from typing import Any
 units = pint.UnitRegistry()
 units.setup_matplotlib()
 
+ATOMIC_TABLE_PATH = "./data/atomic_mass_data.csv"
+
 BINDING_FACTOR_VOLUME = 15.835 * units.megaelectron_volt
 BINDING_FACTOR_SURFACE = 18.33 * units.megaelectron_volt
 BINDING_FACTOR_CHARGE = 0.714 * units.megaelectron_volt
@@ -127,7 +129,7 @@ class AtomicTableEntry:
 
 class AtomicTable:
     def __init__(self, entries):
-        self.entries = entries
+        self.entries = {(entry.z, entry.a): entry for entry in entries}
 
     @staticmethod
     def from_csv_file(file):
@@ -138,6 +140,12 @@ class AtomicTable:
             for row in reader:
                 entries.append(AtomicTableEntry.from_row(row))
         return AtomicTable(entries)
+
+    def lookup(self, z, a):
+        return self.entries.get((z, a))
+
+
+ATOMIC_TABLE = AtomicTable.from_csv_file(ATOMIC_TABLE_PATH)
 
 
 @dataclass
@@ -156,6 +164,41 @@ class Nuclide:
         Return the number of neutrons in this nuclide.
         """
         return self.atomic_number - self.protons
+
+    def atomic_mass(self):
+        """
+        Return the exact atomic mass of this nuclide.
+
+        This looks up the nuclide in a table of masses.
+
+        This will return None for non-existent nuclides.
+        """
+        entry = ATOMIC_TABLE.lookup(self.protons, self.atomic_number)
+        if entry is None:
+            return None
+        return entry.atomic_mass
+
+    def expected_mass(self):
+        """
+        Returns the expected mass by counting the number of particles in this nuclide.
+
+        The actual mass is lower, because of the binding energy in the nucleus.
+        """
+        return (
+            self.protons * (ELECTRON_MASS + PROTON_MASS)
+            + self.neutrons() * NEUTRON_MASS
+        )
+
+    def calculated_binding_energy(self):
+        """
+        Return the calculated binding energy of this nuclide.
+
+        This is calculated using the mass defect of the nuclide.
+        """
+        actual_mass = self.atomic_mass()
+        if actual_mass is None:
+            return None
+        return (self.expected_mass() - actual_mass) * ATOMIC_MASS_ENERGY_EQUIVALENCE
 
     def approximate_binding_energy(self):
         """
