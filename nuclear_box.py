@@ -185,8 +185,7 @@ class Nuclide:
         The actual mass is lower, because of the binding energy in the nucleus.
         """
         return (
-            self.protons * (ELECTRON_MASS + PROTON_MASS)
-            + self.neutrons() * NEUTRON_MASS
+            self.protons * HYDROGEN_ISOTOPE_MASSES[0] + self.neutrons() * NEUTRON_MASS
         )
 
     def calculated_binding_energy(self):
